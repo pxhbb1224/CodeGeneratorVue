@@ -1,6 +1,6 @@
 module.exports = {
 
-    //lintOnSave: false
+    lintOnSave: false,
 
     //配置跨域请求
     devServer: {
@@ -8,7 +8,7 @@ module.exports = {
         https: false,
         proxy: {
             '/api': {
-                target: 'http://localhost:8080/',
+                target: 'http://localhost:9595/',
                 ws: true,
                 changeOrigin: true,
                 pathRewrite: {
