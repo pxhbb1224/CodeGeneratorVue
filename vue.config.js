@@ -14,7 +14,7 @@ module.exports = {
         proxy: {
             '/api': {
                 target: 'http://localhost:9596/',
-                //target: 'http://192.168.1.106:9596/',
+                //target: 'http://192.168.1.107:9596/',
                 ws: true,
                 changeOrigin: true,
                 // 代替跨域的地址
