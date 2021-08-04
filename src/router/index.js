@@ -3,6 +3,8 @@ import Router from 'vue-router'
 import UserManager from '@/views/user/index'
 import CodeManager from '@/views/code/index'
 import Generator from '@/views/generator/index'
+import Table from '@/views/generator/table'
+import View from '@/views/user/table'
 
 Vue.use(Router)
 
@@ -24,5 +26,15 @@ export default new Router({
       name: 'Generator',
       component: Generator
     },
+    {
+      path: '/table',
+      name: 'Table',
+      component: Table
+    },
+    {
+      path: '/view',
+      name: 'View',
+      component: View
+    }
   ]
 })
