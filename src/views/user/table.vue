@@ -27,7 +27,6 @@
 
 <script>
 import service from '@/http/http'
-import codeUser from '../code/index'
 export default {
     //export default:指定模块的默认输出，在其他模块中可以import
     name: 'UserManager',
@@ -67,7 +66,6 @@ export default {
         }
     },
     components:{
-        codeUser
     }
 }
 </script>

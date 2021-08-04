@@ -40,7 +40,6 @@
 
 <script>
 import service from '@/http/http'
-import codeUser from '../code/index'
 export default {
     //export default:指定模块的默认输出，在其他模块中可以import
     name: 'UserManager',
@@ -51,7 +50,7 @@ export default {
         }
     },
     mounted() {
-        service.get('/user/findProject').then(res => {
+        service.get('/user/findAll').then(res => {
             if (res.data.code === 200) {
                 this.projectData = res.data.data
             }
@@ -97,7 +96,6 @@ export default {
 
     },
     components:{
-        codeUser
     }
 }
 </script>
