@@ -1,10 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import UserManager from '@/views/user/index'
-import CodeManager from '@/views/code/index'
 import Generator from '@/views/generator/index'
 import Table from '@/views/generator/table'
-import View from '@/views/user/table'
+import Settings from '@/views/user/settings'
 
 Vue.use(Router)
 
@@ -15,11 +14,6 @@ export default new Router({
       path: '/',
       name: 'UserManager',
       component: UserManager
-    },
-    {
-      path: '/code',
-      name: 'Code',
-      component: CodeManager
     },
     {
       path: '/generator',
@@ -34,7 +28,7 @@ export default new Router({
     {
       path: '/view',
       name: 'View',
-      component: View
+      component: Settings
     }
   ]
 })

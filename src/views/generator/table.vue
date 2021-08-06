@@ -1,16 +1,14 @@
 <template>
-  <div style="padding:20px">
+  <div>
     <el-form ref="tableData" :model="tableData" size="small" label-width="90px">
-        <el-card style="width: 90%; margin: 0 auto;  margin-bottom:50px;">
+        <div style="width: 90%; margin: 0 auto;">
           <div class="table-header">
-            新建表
-            <el-button icon="el-icon-check" 
-                      size="small"
-                      style="float: right; margin-right:20px"
-                      type="success" 
-                      @click="generator"
-            >保存</el-button>
-            </div>
+            <el-row>
+                <el-col :span="24">
+                    {{msg}}
+                </el-col>
+            </el-row>
+          </div>
             <el-row style="font-weight:bold; text-align:left; margin-left:3px; margin-top:15px">
               <el-form-item label="表名" prop="tableName" style="height:35px; width:68%;">
                   <el-input v-model="tableData.tableName"></el-input>
@@ -26,13 +24,13 @@
                 <el-col :span="2">不是Null</el-col>
                 <el-col :span="2">是否主键</el-col>
                 <el-col :span="2">是否唯一</el-col>
-                <el-col :span="4">操作</el-col>
+                <el-col :span="5">操作</el-col>
               </el-row>
             </div>
             <div v-for="(item, index) in tableData.properties" :key="'property' + index" style="border-bottom:1px solid #e9e9e9; margin-left:48px; margin-bottom:10px;">
-                <el-row :gutter="30" style="margin-bottom:10px;">
+                <el-row :gutter="30" style="margin-bottom:10px;display: flex">
                   <el-col :span="3">
-                    <template prop="item.name">
+                    <template prop="item.name" width="50">
                       <el-input v-model="item.name" size="small"></el-input>
                     </template>
                   </el-col>
@@ -62,38 +60,40 @@
                       <el-input v-model="item.precision" size="small"></el-input>
                     </template>
                   </el-col>
-                  <el-col :span="2"  style="margin: auto">
+                  <div style="margin: auto">
                     <template prop="item.isNotNull">
                       <el-checkbox true-label=1 false-label=0 v-model="item.isNotNull"></el-checkbox>
                     </template>
-                  </el-col>
-                  <el-col :span="2">
+                  </div>
+                  <div style="margin: auto">
                     <template prop="item.isPrimary">
                       <el-checkbox true-label=1 false-label=0 v-model="item.isPrimary"></el-checkbox>
                     </template>
-                  </el-col>
-                  <el-col :span="2">
+                  </div>
+                  <div style="margin: auto;">
                     <template prop="item.isUnique">
                       <el-checkbox true-label=1 false-label=0 v-model="item.isUnique"></el-checkbox>
                     </template>
-                  </el-col>
-                  <el-col :span="4">
+                  </div>
+                  <div style="margin: auto">
                     <template prop="item.name">
                       <el-button @click="resetField(item)" type="success" size="mini" icon="el-icon-refresh-right" plain>清空</el-button>
                       <el-button @click="deleteField(item)" type="danger" size="mini" icon="el-icon-delete" plain>删除</el-button>
                     </template>
-                  </el-col>
+                  </div>
                 </el-row>
             </div>
-            <div style="margin-left:35px; margin-top:20px">
+            <div style="margin-left:35px; margin-top:10px; border-bottom:1px solid #e9e9e9;">
+              <el-row>
                 <el-button icon="el-icon-plus"
                            size="small"
-                           style="float: right; margin-bottom: 20px; margin-right:50px"
+                           style="float: right; margin-bottom: 10px;"
                            type="primary"
                            @click="addField"
                 >新增字段</el-button>
+              </el-row>
             </div>
-        </el-card>
+        </div>
     </el-form>
   </div>
 </template>
@@ -101,59 +101,68 @@
 <script>
 import service from '@/http/http'
 export default {
-    name: 'Generator',
+    name: 'Table',
     data() {
         return {
+            projectName : '',
             tableData: {
                 tableName:'',
                 properties: [
-                    // {
-                    //     name: '',
-                    //     type: '',
-                    //     comment: '',
-                    //     length: '',
-                    //     precision: '',
-                    //     isNotNull: 0,
-                    //     isPrimary: 0,
-                    //     isUnique: 0
-                    // }
+                    {
+                        name: '',
+                        type: '',
+                        comment: '',
+                        length: '',
+                        precision: '',
+                        isNotNull: 0,
+                        isPrimary: 0,
+                        isUnique: 0
+                    }
                 ],
                 generateTime: '',
             }
         }
     },
+    props:["msg"],
     created() {
         console.log('created')
     },
     mounted() {
+      // this.projectName = this.$route.params.projectName
       console.log('mounted')  
     },
     methods: {
-        save(){
-            this.addDate()
-            service.post('/user/table', {
+        save(projectName){
+          this.projectName = projectName
+          this.addDate()
+          console.log(this.projectName)
+          let url = '/user/table' + '?projectName=' + this.projectName
+          service.post(url, {
                 // id:1,
                 // name:"sakura"
-                tableName:this.tableData.tableName,
-                properties:this.tableData.properties,
-                generateTime:this.tableData.generateTime
+              tableName:this.tableData.tableName,
+              properties:this.tableData.properties,
+              generateTime:this.tableData.generateTime
                 //configData:this.configData
-            })
-            service.post('')
-            .then(res => {
-                if (res.data.code === 200) {
-                    console.log(res.data)
-                    this.generateSuccess(res.data.data)
-                }
+          }).then(res => {
+            if (res.data.code == 200 && res.data.data == '项目添加表成功！') {
+              console.log(res.data)
+              this.generateSuccess()
+            }
+            else if(res.data.code == 500){
+              this.generateFail("服务器错误")
+            }
+            else{
+              this.generateFail("保存失败")
+            }
 
-            })
-            .catch(function (error) {
+          }).catch(function (error) {
             console.log(error);
-            });
+          });
         },
-        
         addDate(){
             const nowDate = new Date();
+            console.log(nowDate)
             const date = {
                 year: nowDate.getFullYear(),
                 month: nowDate.getMonth() + 1,
@@ -186,14 +195,19 @@ export default {
             this.deleteField(item)
             this.addField()
         },
-        generateSuccess(data) {
-            var info = ''
-            if (data){
-                info = '生成成功'
+        generateSuccess() {
+            this.$alert('保存成功', '结果', {
+            confirmButtonText: '确定',
+            callback: action => {
+                this.$router.push('/view')
+                // this.$message({
+                //     type: 'info',
+                //     message: `action: ${ action }`
+                // });
             }
-            else{
-                info = '生成失败'
-            }
+            });
+        },
+        generateFail(info) {
             this.$alert(info, '结果', {
             confirmButtonText: '确定',
             // callback: action => {
@@ -204,16 +218,12 @@ export default {
             // }
             });
         },
-        generateFail() {
-            this.$alert('生成失败', '结果', {
-            confirmButtonText: '确定',
-            // callback: action => {
-            //     this.$message({
-            //         type: 'info',
-            //         message: `action: ${ action }`
-            //     });
-            // }
-            });
+        initTableData(tableData){
+            console.log("getTableData")
+            this.tableData = tableData
+        },
+        refresh(){
+          Object.assign(this.$data.tableData, this.$options.data().tableData);
         }
     },
 }
@@ -223,11 +233,9 @@ export default {
 .table-header{ 
     padding-bottom: 30px;
     margin-top: 20px;
-    margin-bottom: 40px;
     font-size: 25px;
     font-weight: bold;
     line-height: 30px;
-    border-bottom:1px solid #e9e9e9;
 }
 .table-field-header{
     height: 30px;
