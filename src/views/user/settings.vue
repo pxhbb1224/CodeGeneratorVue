@@ -4,7 +4,7 @@
         :visible.sync="dialogVisible"
         width="90%"
         :before-close="handleClose">
-        <table-component :msg="titledata" ref="tableRef"></table-component>
+        <table-component :msg="titledata" ref="tableRef" @closeFatherDialog="closeFatherDialog"></table-component>
         <span slot="footer" class="dialog-footer" style="margin-right:65px;">
           <el-button icon="el-icon-close"
                      size="small" 
@@ -17,57 +17,75 @@
                   >保存</el-button>
         </span>
       </el-dialog>
-      <div style="width: 90%; margin: 0 auto;">
+      <div style="width: 100%; margin: 0 auto;">
         <div class="title">
             <el-row>
               <el-col :span="3">
                 <el-button 
               icon="el-icon-back" 
-              style="float:left;margin-left:20px"
+              style="float:left;margin-left:40px"
               size="small" 
               type="primary"
               @click="onClickReturn">返回管理列表</el-button>
               </el-col>
                 <el-col :span="18">
-                    项目信息
+                    {{this.projectName}}
                 </el-col>
                 <el-col :span="3">
             <el-button icon="el-icon-plus" 
                            size="small"
-                           style="float: right;margin-right:20px"
+                           style="float: right;margin-right:40px"
                            type="primary" 
                            @click="onClickAddTable"
                 >添加表</el-button>
                 </el-col>
             </el-row>
         </div>
-        <el-tabs :tab-position="tabPosition" v-model="activeName" @tab-click="handleClick()" style="width:95%;margin:0 auto">
+        <el-tabs :tab-position="tabPosition" v-model="activeName" @tab-click="handleClick()" style="width:100%;margin:0 auto">
         <el-tab-pane name="tableSettings">
           <span slot="label" style="font-size: 16px; font-weight: bold;">表信息</span>
-          <el-table v-loading="loading" :data="tablesData" style="width: 100%;" align="center">
-            <el-table-column prop="name" label="表名" align="center"/>
-            <el-table-column prop="info" label="描述" align="center"/>
-            <el-table-column prop="updateTime" label="更新时间" align="left" />
+          <el-table v-loading="loading" :data="tablesData" style="width: 100%; margin-top:20px" align="center" :header-cell-style="{background:'#eef1f6',color:'#606266'}">
+            <el-table-column prop="tableName" label="表名" align="center"/>
+            <el-table-column prop="comment" label="描述" align="center"/>
+            <el-table-column prop="generateTime" label="更新时间" align="left" />
             <el-table-column label="操作" width="300" align="center">
                 <template slot-scope="scope">
-                    <el-button icon="el-icon-edit" size="mini" type="warning" @click="onClickEdit(scope.row.name)" plain>修改</el-button>
-                    <el-button icon="el-icon-delete" size="mini" type="danger" @click="onClickDeteleTable(scope.row.name)" plain>删除</el-button>
+                    <el-button icon="el-icon-edit" size="mini" type="warning" @click="onClickEdit(scope.row.tableName)" plain>修改</el-button>
+                    <el-button icon="el-icon-delete" size="mini" type="danger" @click="onClickDeteleTable(scope.row.tableName)" plain>删除</el-button>
                 </template>
             </el-table-column>
           </el-table>
-          
           </el-tab-pane>
         <el-tab-pane name="configSettings">
           <span slot="label" style="font-size: 16px; font-weight: bold;">配置信息</span>
-            <config-component ref="configRef"></config-component>
+            <el-descriptions :column="2" border v-if="ifShowEdit" style="width:98%;margin:auto;margin-top:20px">
+                <el-descriptions-item label="项目名">{{configData.projectName}}</el-descriptions-item>
+                <el-descriptions-item label="项目描述" >{{configData.description}}</el-descriptions-item>
+                <el-descriptions-item label="包名">{{configData.packageName}}</el-descriptions-item>
+                <el-descriptions-item label="作者名">{{configData.authorName}}</el-descriptions-item>
+                <el-descriptions-item label="去表前缀">{{configData.prefix}}</el-descriptions-item>
+            </el-descriptions>
+            
+            <config-component ref="configRef" v-if="ifShowSave" style="margin-top:20px"></config-component>
+            
+            <el-button icon="el-icon-edit" 
+                     style="float:right; margin-top:20px"
+                     size="small"
+                     type="warning" 
+                     v-if="ifShowEdit"
+                     @click="onClickEditConfig()"
+                  >修改</el-button>
+
             <el-button icon="el-icon-check" 
                      style="float:right; margin-top:20px"
                      size="small"
                      type="success" 
+                     v-if="ifShowSave"
                      @click="onClickSaveConfig()"
                   >保存</el-button>
         </el-tab-pane>
       </el-tabs>
+
         
       </div>
     </div>
@@ -87,6 +105,8 @@ export default {
             tabPosition: 'top',
             activeName: 'tableSettings',
             loading:true,
+            ifShowEdit:true,
+            ifShowSave:false,
 
             projectName: '',
             tablesData:[],
@@ -118,16 +138,12 @@ export default {
     },
     mounted() {
         this.projectName = this.$route.query.projectName
-        console.log(this.projectName)
-        service.get('/user/getTables').then(res => {
-            if (res.data.code === 200) {
-                this.tablesData = res.data.data
-            }
-        })
+        console.log('projectName' + this.projectName)
+        this.getTablesInfo()
         this.tablesData.push({
-                name: 'test_TableName',
-                info: 'test_info',
-                updateTime: '2021/8/3',
+                tableName: 'test_TableName',
+                comment: 'test_info',
+                generateTime: '2021/8/3',
             })
         this.loading = false
 
@@ -139,7 +155,9 @@ export default {
         onClickAddTable() {
             this.titledata = '添加表'
             this.dialogVisible =  true,
-            this.refreshTableForm()
+            this.$nextTick(() => {
+                this.refreshTableForm()
+            })
             console.log('clickAddTable') 
         },
         onClickEdit(tableName){
@@ -150,16 +168,33 @@ export default {
             })
             console.log('Edit')
         },
-        onClickDeteleTable(tableName) {
+        onClickDeteleTable(currTableName) {
             this.$confirm('是否删除该表?', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                this.$message({
-                type: 'success',
-                message: '删除成功!'
-                });
+                console.log(currTableName)
+                console.log(this.projectName)
+                service.post('/user/deleteTable', {
+                        tableName:currTableName,
+                        projectName:this.projectName}
+                    ).then(res => {
+                    console.log(res.data.data)
+                    if (res.data.code === 200) {
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功!'
+                        });
+                        location.reload()
+                    }
+                    else{
+                        this.$message({
+                            type: 'warning',
+                            message: '删除失败!'
+                        });
+                    }
+                })    
             }).catch(() => {
                 this.$message({
                 type: 'info',
@@ -170,13 +205,24 @@ export default {
         onClickSaveTable(){
             this.$refs.tableRef.save(this.projectName)
         },
+        onClickEditConfig(){
+            this.ifShowSave = true
+            this.ifShowEdit = false
+            this.$nextTick(() => {
+                this.$refs.configRef.initConfigData(this.configData)
+            })
+        },
         onClickSaveConfig(){
             this.$refs.configRef.onClickSave()
         },
         handleClick(){
             if(this.activeName == 'configSettings'){
         	    // 触发配置管理事件,给配置组件内的信息做初始化
-        	this.getConfigInfo()
+        	
+            this.getConfigInfo()
+            
+            this.ifShowSave = false
+            this.ifShowEdit = true
             }
         },
         handleClose(done) {
@@ -185,22 +231,32 @@ export default {
                 done();
             })
             .catch(_ => {});
-            },
+        },
+        closeFatherDialog(){
+            this.dialogVisible = false
+            this.getTablesInfo()
+        },
+        getTablesInfo(){
+            service.post('/user/sendTable', {projectName:this.projectName}).then(res => {
+                if (res.data.code === 200) {
+                    this.tablesData = res.data.data
+                }
+            })
+        },
         getConfigInfo(){
             //测试数据
-            this.$refs.configRef.initConfigData(this.configData)
-            service.get('/user/getConfig').then(res => {
+            //this.$refs.configRef.initConfigData(this.configData)
+            service.post('/user/sendConfig',{projectName:this.projectName}).then(res => {
               if (res.data.code === 200) {
                 this.configData = res.data.data
-                this.$refs.configRef.initConfigData(this.configData)
               }
             })
         },
         getTableInfo(tableName){
             //测试数据
-            this.$refs.tableRef.initTableData(this.tableData)
-            service.get({
-                url:'/user/getTable',
+            //this.$refs.tableRef.initTableData(this.tableData)
+            service.post({
+                url:'/user/sendTable',
                 data:{
                     tableName:tableName, 
                     projectName:this.projectName
@@ -229,9 +285,15 @@ export default {
 }
 .title{
     text-align: center;
-    margin-top: 20px;
-    margin-bottom: 40px;
-    font-size: 25px;
+    margin-bottom: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 30px;
+}
+.config-info{
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 15px;
     font-weight: bold;
     line-height: 30px;
 }

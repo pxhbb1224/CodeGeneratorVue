@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form ref="tableData" :model="tableData" size="small" label-width="90px">
+    <el-form ref="tableData" :rules="rules" :model="tableData" size="small" label-width="90px">
         <div style="width: 90%; margin: 0 auto;">
           <div class="table-header">
             <el-row>
@@ -12,6 +12,9 @@
             <el-row style="font-weight:bold; text-align:left; margin-left:3px; margin-top:15px">
               <el-form-item label="表名" prop="tableName" style="height:35px; width:68%;">
                   <el-input v-model="tableData.tableName"></el-input>
+              </el-form-item>
+              <el-form-item label="描述" prop="comment" style="height:35px; width:68%;">
+                  <el-input v-model="tableData.comment"></el-input>
               </el-form-item>
             </el-row>
             <div class="table-field-header">
@@ -107,6 +110,7 @@ export default {
             projectName : '',
             tableData: {
                 tableName:'',
+                comment: '',
                 properties: [
                     {
                         name: '',
@@ -120,6 +124,11 @@ export default {
                     }
                 ],
                 generateTime: '',
+            },
+            rules: {
+              tableName: [
+              { required: true, message: '请输入表名称', trigger: 'blur' },
+              ],
             }
         }
     },
@@ -134,44 +143,61 @@ export default {
     methods: {
         save(projectName){
           this.projectName = projectName
-          this.addDate()
-          console.log(this.projectName)
-          let url = '/user/table' + '?projectName=' + this.projectName
-          service.post(url, {
+          this.validForm()
+        },
+        validForm(){
+          this.$refs['tableData'].validate((valid) => {
+            if (valid) {
+              alert('submit!');
+              this.addDate()
+              console.log(this.projectName)
+              let url = '/user/table' + '?projectName=' + this.projectName
+              service.post(url, {
                 // id:1,
                 // name:"sakura"
-              tableName:this.tableData.tableName,
-              properties:this.tableData.properties,
-              generateTime:this.tableData.generateTime
+                tableName:this.tableData.tableName,
+                comment:this.tableData.comment,
+                properties:this.tableData.properties,
+                generateTime:this.tableData.generateTime
                 //configData:this.configData
-          }).then(res => {
-            if (res.data.code == 200 && res.data.data == '项目添加表成功！') {
-              console.log(res.data)
-              this.generateSuccess()
+              }).then(res => {
+                if (res.data.code == 200) {
+                  console.log(res.data)
+                  this.generateSuccess()
+                }
+                else if(res.data.code == 201){
+                  this.generateFail(res.data.message)
+                }
+                else{
+                  this.generateFail("服务器错误")
+                }
+              }).catch(function (error) {
+                console.log(error);
+              });
+            } else {
+              console.log('error submit!!');
+              this.$message({
+                message:  `请完成必填信息`,
+                type: 'warning'
+              });
+              return false;
             }
-            else if(res.data.code == 500){
-              this.generateFail("服务器错误")
-            }
-            else{
-              this.generateFail("保存失败")
-            }
-
-          }).catch(function (error) {
-            console.log(error);
           });
         },
+        add0(m){
+	        return m<10?'0'+m : m
+        },
         addDate(){
-            const nowDate = new Date();
-            console.log(nowDate)
-            const date = {
-                year: nowDate.getFullYear(),
-                month: nowDate.getMonth() + 1,
-                date: nowDate.getDate(),
-            }
-            const newmonth = date.month>10?date.month:'0'+date.month
-            const day = date.date>10?date.date:'0'+date.date
-            // this.updateTime = date.year + '-' + newmonth + '-' + day
-            this.tableData.generateTime = date.year + '-' + newmonth + '-' + day
+          var time = new Date()
+	        var y = time.getFullYear()
+	        var m = time.getMonth()+1
+	        var d = time.getDate()
+	        var h = time.getHours()
+	        var mm = time.getMinutes()
+	        var s = time.getSeconds()
+          var nowTime = y+'/'+this.add0(m)+'/'+this.add0(d)+' '+this.add0(h)+':'+this.add0(mm)+':'+this.add0(s)
+          this.tableData.generateTime = nowTime
+          console.log(nowTime)
         },
         addField() {
             this.tableData.properties.push({
@@ -199,7 +225,7 @@ export default {
             this.$alert('保存成功', '结果', {
             confirmButtonText: '确定',
             callback: action => {
-                this.$router.push('/view')
+                this.$emit('closeFatherDialog');
                 // this.$message({
                 //     type: 'info',
                 //     message: `action: ${ action }`
@@ -208,9 +234,14 @@ export default {
             });
         },
         generateFail(info) {
-            this.$alert(info, '结果', {
+            this.$alert('保存失败: '+ info, '结果', {
             confirmButtonText: '确定',
-            // callback: action => {
+            callback: action => {
+              this.$message({
+                message:  `请重新尝试！`,
+                type: 'warning'
+              });
+            }
             //     this.$message({
             //         type: 'info',
             //         message: `action: ${ action }`
