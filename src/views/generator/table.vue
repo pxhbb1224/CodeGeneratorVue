@@ -65,17 +65,17 @@
                   </el-col>
                   <div style="margin: auto">
                     <template prop="item.isNotNull">
-                      <el-checkbox true-label=1 false-label=0 v-model="item.isNotNull"></el-checkbox>
+                      <el-checkbox :true-label=1 :false-label=0 v-model="item.isNotNull"></el-checkbox>
                     </template>
                   </div>
                   <div style="margin: auto">
                     <template prop="item.isPrimary">
-                      <el-checkbox true-label=1 false-label=0 v-model="item.isPrimary"></el-checkbox>
+                      <el-checkbox :true-label=1 :false-label=0 v-model="item.isPrimary"></el-checkbox>
                     </template>
                   </div>
                   <div style="margin: auto;">
                     <template prop="item.isUnique">
-                      <el-checkbox true-label=1 false-label=0 v-model="item.isUnique"></el-checkbox>
+                      <el-checkbox :true-label=1 :false-label=0 v-model="item.isUnique"></el-checkbox>
                     </template>
                   </div>
                   <div style="margin: auto">
@@ -107,8 +107,9 @@ export default {
     name: 'Table',
     data() {
         return {
-            projectName : '',
+            project: '',
             tableData: {
+                tableId:'',
                 tableName:'',
                 comment: '',
                 properties: [
@@ -141,20 +142,21 @@ export default {
       console.log('mounted')  
     },
     methods: {
-        save(projectName){
-          this.projectName = projectName
+        save(project){
+          this.project = project
           this.validForm()
         },
         validForm(){
           this.$refs['tableData'].validate((valid) => {
             if (valid) {
-              alert('submit!');
+              alert('已提交请求');
               this.addDate()
-              console.log(this.projectName)
-              let url = '/user/table' + '?projectName=' + this.projectName
+              console.log(this.project.name)
+              let url = '/user/table' + '?projectId=' + this.project.id
               service.post(url, {
                 // id:1,
                 // name:"sakura"
+                tableId:this.tableData.tableId,
                 tableName:this.tableData.tableName,
                 comment:this.tableData.comment,
                 properties:this.tableData.properties,
@@ -195,7 +197,7 @@ export default {
 	        var h = time.getHours()
 	        var mm = time.getMinutes()
 	        var s = time.getSeconds()
-          var nowTime = y+'/'+this.add0(m)+'/'+this.add0(d)+' '+this.add0(h)+':'+this.add0(mm)+':'+this.add0(s)
+          var nowTime = y+'-'+this.add0(m)+'-'+this.add0(d)+' '+this.add0(h)+':'+this.add0(mm)+':'+this.add0(s)
           this.tableData.generateTime = nowTime
           console.log(nowTime)
         },
@@ -252,6 +254,7 @@ export default {
         initTableData(tableData){
             console.log("getTableData")
             this.tableData = tableData
+            console.log(this.tableData)
         },
         refresh(){
           Object.assign(this.$data.tableData, this.$options.data().tableData);
@@ -263,7 +266,6 @@ export default {
 <style scoped>
 .table-header{ 
     padding-bottom: 30px;
-    margin-top: 20px;
     font-size: 25px;
     font-weight: bold;
     line-height: 30px;

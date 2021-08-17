@@ -1,30 +1,14 @@
 <template>
-  <div style="padding:20px">
-        <div style="width: 90%; margin: 0 auto; margin-bottom:50px;"> 
+  <div>
+        <div style="width: 95%; margin: 0 auto;"> 
             <div class="table-header">
               <el-row>
-              <el-col :span="3">
-                <el-button icon="el-icon-back" 
-                           size="small"
-                           style="float: left; margin-left:20px"
-                           type="primary" 
-                           @click="onClickReturn"
-                >返回管理列表</el-button>
-              </el-col>
-                <el-col :span="18">
-                    新建项目
-                </el-col>
-                <el-col :span="3">
-                  <el-button icon="el-icon-check" 
-                           size="small"
-                           style="float: right; margin-right:20px"
-                           type="success" 
-                           @click="onClickAdd"
-                  >保存</el-button>
+                <el-col :span="24">
+                    {{msg}}
                 </el-col>
             </el-row>
             </div>
-          <config-component ref="configRef"></config-component>
+          <config-component ref="configRef" @closeFatherDialog="closeFatherDialog"></config-component>
         </div>
   </div>
 </template>
@@ -36,6 +20,7 @@ export default {
     data() {
         return {}
     },
+    props:["msg"],
     created() {
         console.log('created')
     },
@@ -43,11 +28,17 @@ export default {
       console.log('mounted')  
     },
     methods: {
-        onClickReturn(){
-          this.$router.go(-1)
+        onClickSave(){
+          this.$refs.configRef.onClickSave()
         },
-        onClickAdd(){
-            this.$refs.configRef.onClickSave()
+        initConfigData(configData){
+          this.$nextTick(() => {
+            this.$refs.configRef.initConfigData(configData)
+          })
+        },
+        closeFatherDialog(){
+          //传递给user/index
+          this.$emit('closeFatherDialog');
         }
     },
     components:{
@@ -58,11 +49,10 @@ export default {
 
 <style scoped>
 .table-header{
-    margin-top: 20px;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     font-size: 25px;
     font-weight: bold;
-    line-height: 30px;
+    line-height: 20px;
 }
 .config-input{
     height:35px; 

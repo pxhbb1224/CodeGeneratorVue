@@ -74,6 +74,7 @@ export default {
         return {
             activeNames: ['1','2'],
             projectData:{
+              projectId: '',
               projectName: '',
               description: '',
               generateTime: '',
@@ -98,9 +99,6 @@ export default {
       console.log('mounted')  
     },
     methods: {
-        onClickReturn(){
-          this.$router.go(-1)
-        },
         onClickSave(){
             //this.generateSuccess(true)
           this.validForm()
@@ -110,7 +108,7 @@ export default {
             if (valid) {
               console.log("ProjectValid success")
               this.$message({
-                    message:  `项目新建已提交`,
+                    message:  `已提交请求`,
                     type: 'success'
               });
               this.addDate()
@@ -121,6 +119,7 @@ export default {
                 authorName:this.configData.authorName,
                 prefix:this.configData.prefix,
                 needCovered:this.configData.needCovered,
+                projectId:this.projectData.projectId,
                 description:this.projectData.description,
                 projectName:this.projectData.projectName,
                 generateTime:this.projectData.generateTime
@@ -148,8 +147,9 @@ export default {
         generateSuccess() {
             this.$alert('保存成功', '结果', {
             confirmButtonText: '确定',
+            //传递给generate/index
             callback: action => {
-                this.$router.go(-1)
+                this.$emit('closeFatherDialog');
             }
             //     if(data){
             //       this.$confirm('是否添加表?', '提示', {
@@ -188,6 +188,7 @@ export default {
             this.configData.authorName = configData.authorName,
             this.configData.prefix = configData.prefix,
             this.configData.needCovered = configData.needCovered,
+            this.projectData.projectId = configData.projectId,
             this.projectData.description = configData.description,
             this.projectData.projectName = configData.projectName
         },
@@ -202,9 +203,12 @@ export default {
 	        var h = time.getHours()
 	        var mm = time.getMinutes()
 	        var s = time.getSeconds()
-            var nowTime = y+'/'+this.add0(m)+'/'+this.add0(d)+' '+this.add0(h)+':'+this.add0(mm)+':'+this.add0(s)
+            var nowTime = y+'-'+this.add0(m)+'-'+this.add0(d)+' '+this.add0(h)+':'+this.add0(mm)+':'+this.add0(s)
             this.projectData.generateTime = nowTime
             console.log(nowTime)
+        },
+        refresh(){
+          Object.assign(this.$data, this.$options.data());
         }
     },
 }
@@ -212,13 +216,11 @@ export default {
 
 <style scoped>
 .table-header{
-    margin-bottom: 40px;
     font-size: 25px;
     font-weight: bold;
-    line-height: 30px;
 }
 .config-input{
-    height:35px; 
+    height:30px; 
     width:50%;
     margin-left:45px;
 }

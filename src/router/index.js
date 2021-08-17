@@ -26,8 +26,8 @@ export default new Router({
       component: Table
     },
     {
-      path: '/view',
-      name: 'View',
+      path: '/setting',
+      name: 'Setting',
       component: Settings
     }
   ]
