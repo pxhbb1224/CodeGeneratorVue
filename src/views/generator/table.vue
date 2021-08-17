@@ -25,8 +25,8 @@
                 <el-col :span="2" style="text-align: left">长度</el-col>
                 <el-col :span="2" style="text-align: left">精度</el-col>
                 <el-col :span="2">不是Null</el-col>
-                <el-col :span="2">是否主键</el-col>
                 <el-col :span="2">是否唯一</el-col>
+                <el-col :span="2">是否主键</el-col>
                 <el-col :span="5">操作</el-col>
               </el-row>
             </div>
@@ -68,14 +68,14 @@
                       <el-checkbox :true-label=1 :false-label=0 v-model="item.isNotNull"></el-checkbox>
                     </template>
                   </div>
-                  <div style="margin: auto">
-                    <template prop="item.isPrimary">
-                      <el-checkbox :true-label=1 :false-label=0 v-model="item.isPrimary"></el-checkbox>
-                    </template>
-                  </div>
                   <div style="margin: auto;">
                     <template prop="item.isUnique">
                       <el-checkbox :true-label=1 :false-label=0 v-model="item.isUnique"></el-checkbox>
+                    </template>
+                  </div>
+                  <div style="margin: auto">
+                    <template prop="item.isPrimary">
+                      <el-checkbox :true-label=1 :false-label=0 v-model="item.isPrimary"></el-checkbox>
                     </template>
                   </div>
                   <div style="margin: auto">
